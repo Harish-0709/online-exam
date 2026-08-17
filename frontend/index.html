@@ -1,0 +1,172 @@
+const API_URL = "http://localhost:5000";
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Online Examination System</title>
+
+    <style>
+        body {
+            font-family: Arial;
+            background-color: #f2f2f2;
+            margin: 0;
+        }
+
+        header {
+            background-color: #333;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .container {
+            width: 70%;
+            margin: 30px auto;
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+        }
+
+        .question {
+            margin-bottom: 25px;
+        }
+
+        button {
+            background-color: #333;
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #result {
+            margin-top: 20px;
+            font-size: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>Online Examination System</h1>
+    <p>Academic Integrity Management</p>
+</header>
+
+<div class="container">
+
+    <h2 id="examTitle">Loading Examination...</h2>
+
+    <form id="examForm"></form>
+
+    <button onclick="submitExam()">Submit Examination</button>
+
+    <div id="result"></div>
+
+</div>
+
+<script>
+
+const API_URL = "http://localhost:5000";
+
+let questions = [];
+
+// Load examination
+fetch(API_URL + "/api/exam")
+    .then(response => response.json())
+    .then(data => {
+
+        document.getElementById("examTitle").innerText =
+            data.title + " - " + data.subject;
+
+        questions = data.questions;
+
+        const form = document.getElementById("examForm");
+
+        data.questions.forEach((q, index) => {
+
+            const div = document.createElement("div");
+
+            div.className = "question";
+
+            div.innerHTML = `
+                <h3>${index + 1}. ${q.question}</h3>
+
+                ${q.options.map(option => `
+                    <label>
+                        <input
+                            type="radio"
+                            name="question${q.id}"
+                            value="${option}">
+                        ${option}
+                    </label>
+                    <br>
+                `).join("")}
+            `;
+
+            form.appendChild(div);
+        });
+    })
+    .catch(error => {
+        document.getElementById("examTitle").innerText =
+            "Unable to connect to backend";
+        console.error(error);
+    });
+
+
+// Submit examination
+function submitExam() {
+
+    const answers = [];
+
+    questions.forEach(q => {
+
+        const selected = document.querySelector(
+            `input[name="question${q.id}"]:checked`
+        );
+
+        if (selected) {
+            answers.push({
+                id: q.id,
+                answer: selected.value
+            });
+        }
+    });
+
+    fetch(API_URL + "/api/submit", {
+
+        method: "POST",
+
+        headers: {
+            "Content-Type": "application/json"
+        },
+
+        body: JSON.stringify({
+            answers: answers
+        })
+    })
+
+    .then(response => response.json())
+
+    .then(data => {
+
+        document.getElementById("result").innerText =
+            data.message +
+            " Score: " +
+            data.score +
+            "/" +
+            data.total;
+    })
+
+    .catch(error => {
+        console.error(error);
+        document.getElementById("result").innerText =
+            "Submission failed";
+    });
+}
+
+</script>
+
+</body>
+</html>
