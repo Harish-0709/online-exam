@@ -3,10 +3,24 @@ pipeline {
 
     stages {
 
-        stage('Docker Test') {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Verify Project') {
+            steps {
+                sh 'pwd'
+                sh 'ls -la'
+                sh 'ls -la backend'
+                sh 'ls -la frontend'
+            }
+        }
+
+        stage('Docker Check') {
             steps {
                 sh 'docker --version'
-                sh 'docker compose version'
                 sh 'docker ps'
             }
         }
@@ -14,11 +28,11 @@ pipeline {
 
     post {
         success {
-            echo 'Docker connection is working!'
+            echo 'Jenkins and Docker are working successfully!'
         }
 
         failure {
-            echo 'Docker connection failed!'
+            echo 'Pipeline failed!'
         }
     }
 }
