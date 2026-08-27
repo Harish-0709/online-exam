@@ -16,11 +16,15 @@ pipeline {
             }
         }
 
-        stage('3. Automated Testing') {
+       stage('3. Automated Testing') {
             steps {
                 echo 'Starting application for testing...'
+
+                sh 'docker compose down || true'
                 sh 'docker compose up -d'
+
                 sh 'sleep 10'
+
                 sh 'docker compose ps'
 
                 echo 'Testing frontend...'
