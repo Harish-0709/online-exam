@@ -5,34 +5,40 @@ pipeline {
 
         stage('Checkout') {
             steps {
-                checkout scm
+                echo 'Checking out Online Examination System...'
             }
         }
 
-        stage('Verify Project') {
+        stage('Docker Compose Build') {
             steps {
-                sh 'pwd'
-                sh 'ls -la'
-                sh 'ls -la backend'
-                sh 'ls -la frontend'
+                echo 'Building frontend and backend Docker images...'
+                sh 'docker compose build'
             }
         }
 
-        stage('Docker Check') {
+        stage('Deploy Application') {
             steps {
-                sh 'docker --version'
-                sh 'docker ps'
+                echo 'Starting frontend and backend containers...'
+                sh 'docker compose down || true'
+                sh 'docker compose up -d'
+            }
+        }
+
+        stage('Verify Deployment') {
+            steps {
+                echo 'Checking running containers...'
+                sh 'docker compose ps'
             }
         }
     }
 
     post {
         success {
-            echo 'Jenkins and Docker are working successfully!'
+            echo 'CI/CD Pipeline completed successfully!'
         }
 
         failure {
-            echo 'Pipeline failed!'
+            echo 'CI/CD Pipeline failed. Check the Jenkins console output.'
         }
     }
 }
